@@ -1,0 +1,527 @@
+#pgzero
+import random
+
+WIDTH = 700 # Ширина окна
+HEIGHT = 400 # Высота окна
+
+TITLE = "Тайны ГАЛАКТИКИ" # Заголовок окна игры
+FPS = 45 # Количество кадров в секунду
+
+fon = Actor("space")
+fon_win = Actor("galaktika")
+ship = Actor("turtle_ship", (350, 350))
+lazer = Actor("lazer_b")
+polomka = Actor("polomka")
+GO = Actor("GO", (350, 200))
+planets = [Actor("planet_1", (random.randint(0, 700), -165)), Actor("planet_2", (random.randint(0, 700), -595)), Actor("planet_3", (random.randint(0, 700), -1200)), Actor("planet_4", (random.randint(0, 700), -1500)), Actor("planet_5", (random.randint(0, 700), -2000)), Actor("planet_6", (random.randint(0, 700), -2500)), Actor("chasi", (random.randint(0, 700), random.randint(-800, -80))), Actor("bomba", (random.randint(0, 700), random.randint(-800, -80))), Actor("klad", (random.randint(0, 700), random.randint(-800, -80)))]
+krot = Actor("krot", (350, 200))
+rose = Actor("Arterose", (random.randint(0, 700), random.randint(-200, -100)))
+hole = Actor("black_hole", (random.randint(0, 700), random.randint(-200, -100)))
+starec_final = Actor("artestarec", (50, 100))
+artegora_flower = Actor("artegora", (50, 200))
+vojd = Actor("vojd", (610, 120))
+vragi = []
+bullets = []
+bullets_left = []
+bullets_right = []
+knopka = Actor("knopka", (350, 305))
+win = Actor("pobeda", (350, 85))
+glove = Actor("glove", (620, 340))
+glove_2 = Actor("glove", (620, 300))
+vrag_menu = Actor("arteship", (50, 300))
+starec_menu = Actor("artestarec", (50, 250))
+mode = 'shooter'
+colli = 0
+count_vragi = 0
+count_monety = 0
+count_polomok = 0
+arterose_vin = 0
+popytka = 4
+level = 1
+enemies = []
+totem = Actor("totem", (50, 300))
+my_map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+          [0, 2, 3, 2, 3, 2, 5, 5, 5, 2, 3, 2, 3, 0], 
+          [0, 3, 4, 5, 4, 5, 4, 4, 4, 5, 4, 5, 4, 0], 
+          [0, 2, 5, 1, 1, 1, 4, 5, 4, 1, 1, 1, 5, 0], 
+          [0, 3, 4, 5, 4, 5, 4, 4, 4, 5, 4, 5, 4, 0], 
+          [0, 2, 3, 2, 3, 2, 5, 5, 5, 2, 3, 2, 3, 0], 
+          [0, 2, 5, 1, 1, 1, 4, 5, 4, 1, 1, 1, 5, 0], 
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
+f1 = Actor("f_1")
+f2 = Actor("f_2")
+f3 = Actor("f_3")
+f4 = Actor("f_4")
+f5 = Actor("f_5")
+f6 = Actor("f_6")
+hero = Actor("hero_red")
+hero.top = f1.height
+hero.left = f1.width
+hero_red = Actor("hero_red", (50, 200), size=(40,70))
+
+mode = 'privetstvie'
+
+#заполнение списка врагов
+def plus_vrag():
+    if mode == "shooter":
+        x = random.randint(0, 700)
+        y = random.randint(-450, -50)
+        vrag = Actor("arteship", (x, y))
+        vrag.speed = random.randint(4, 8)
+        vragi.append(vrag)
+for i in range(8):
+    plus_vrag()
+
+# создание артестарцев (в рогалике)
+for i in range(5):
+    x = random.randint(1, 12) * f1.width
+    y = random.randint(1, 6) * f1.height
+    enemy = Actor("artestarec", topleft = (x, y))
+    enemies.append(enemy)
+    for j in range(len(enemies)):
+        if j == 0:
+            enemy.bonus = 1
+        else:
+            enemy.bonus = 0
+
+# Бонусы
+artegori = []
+palochki = []
+
+def map_draw():
+    for i in range(len(my_map)):
+        for j in range(len(my_map[0])):
+            if my_map[i][j] == 0:
+                f1.left = f1.width*j
+                f1.top = f1.height*i
+                f1.draw()
+            elif my_map[i][j] == 1:
+                f2.left = f2.width*j
+                f2.top = f2.height*i
+                f2.draw()
+            elif my_map[i][j] == 2:
+                f3.left = f3.width*j
+                f3.top = f3.height*i
+                f3.draw()  
+            elif my_map[i][j] == 3:
+                f4.left = f4.width*j
+                f4.top = f4.height*i
+                f4.draw()
+            elif my_map[i][j] == 4:
+                f5.left = f5.width*j
+                f5.top = f5.height*i
+                f5.draw()
+            elif my_map[i][j] == 5:
+                f6.left = f6.width*j
+                f6.top = f6.height*i
+                f6.draw()
+
+# Отрисовка
+def draw():
+    global mode, planets, popytka
+    screen.clear()
+    # Режим игры
+    if mode == 'shooter':
+        fon.draw()
+
+        # Отрисовка планет
+        for i in range(len(planets)):
+            planets[i].draw()
+        
+        # Отрисовка кротовой норы и чёрной дыры
+        if count_vragi >= 50 and level == 1:
+            krot.draw()
+
+        hole.draw()
+
+        # Отрисовка корабля
+        ship.draw()
+
+        # Отрисовка артерозы
+        if count_vragi >= 35 and level == 1:
+            rose.draw()
+
+        # Отрисовка счёта, уровни
+        screen.draw.text("🪙 ", center = (678, 26), color = "white", fontsize = 24)
+        screen.draw.text(count_vragi, center = (640, 26), color = "green", fontsize = 24)
+        screen.draw.text(level, (45, 15), color = "green", fontsize = 24)
+        screen.draw.text("lvl ", (10, 15), color = "white", fontsize = 24)
+        
+        # Отрисовка врагов
+        for i in range(len(vragi)):
+            vragi[i].draw()
+            
+        #Отрисовка пуль
+        for i in range(len(bullets)):
+            bullets[i].draw()
+        
+        for i in range(len(bullets_left)):
+            bullets_left[i].draw()
+
+        for i in range(len(bullets_right)):
+            bullets_right[i].draw()
+        
+##################################################### Окно рогалика
+    elif mode == 'krot_nora':
+    #Отрисовка карт  
+        planets = []
+        screen.clear()
+        map_draw()
+        for i in range(len(enemies)):
+            enemies[i].draw()
+
+        #отрисовка бонусов
+        for i in range(len(palochki)):
+            palochki[i].draw()
+        for i in range(len(artegori)):
+            artegori[i].draw()
+            
+        hero.draw()
+        hero.draw()
+   
+      # Отрисовка количества попыток найти цветок артегоры 
+        screen.draw.text("Осталось попыток найти цветок Артегоры", center = (450, 375), color = "black", fontsize = 16)
+        screen.draw.text(popytka, center = (650, 375), color = "black", fontsize = 16)   
+
+    # Отрисовка меню
+    elif mode == "privetstvie":
+        fon_win.draw()
+        screen.draw.text("ТАЙНЫ    ГАЛАКТИКИ!", center = (350, 40), color = "green", fontsize = 36)
+        vojd.draw()
+        hero_red.draw()
+        glove.draw()
+        screen.draw.text("Приветствую на Галактионе!", center = (350, 70), color = "black", fontsize = 16)
+        screen.draw.text("Что ты ищешь, странник?", center = (350, 88), color = "black", fontsize = 16)
+        screen.draw.text("Древний артефакт - могущественный медальон,", center = (320, 106), color = "yellow", fontsize = 16)
+        screen.draw.text("чтобы спасти нашу планету Клио от потопа.", center = (320, 124), color = "yellow", fontsize = 16)
+        screen.draw.text("Мы обнаружили его на Галактионе", center = (350, 142), color = "black", fontsize = 16)
+        screen.draw.text("Что я могу сделать, чтобы получить медальон?", center = (320, 160), color = "yellow", fontsize = 16)
+        screen.draw.text("Мы отдадим его в обмен на цветок Артегоры,", center = (350, 178), color = "black", fontsize = 16)
+        screen.draw.text("который спасет нашу планету от засухи.", center = (350, 196), color = "black", fontsize = 16)
+        screen.draw.text("Он хранится в галактике Артон у Артефактерианцев", center = (350, 214), color = "black", fontsize = 16)
+        screen.draw.text("Ты попадешь туда через кротовую нору.", center = (350, 232), color = "black", fontsize = 16)
+        screen.draw.text("Найди в космосе тотем Артерозу, отыщи Артестарца,", center = (350, 250), color = "black", fontsize = 16)
+        screen.draw.text("и он отдаст тебе цветок Артегоры в обмен на Артерозу,", center = (350, 268), color = "black", fontsize = 16)
+        screen.draw.text("которая хранит все тайны Вселенной", center = (350, 286), color = "black", fontsize = 16)
+        screen.draw.text("но остерегайся черных дыр", center = (350, 304), color = "black", fontsize = 16)
+        screen.draw.text("и кораблей космических пиратов", center = (350, 322), color = "black", fontsize = 16)
+        screen.draw.text("Я в деле!!!", center = (320, 350), color = "yellow", fontsize = 16)
+    
+    # Отрисовка меню с управлением
+    elif mode == "menu":
+        fon_win.draw()
+        screen.draw.text("ТАЙНЫ    ГАЛАКТИКИ!", center = (350, 40), color = "green", fontsize = 36)
+        ship.draw()
+        vrag_menu.draw()
+        planets[5].draw()
+        rose.draw()
+        enemy.draw()
+        glove_2.draw()
+        screen.draw.text("Управляй кораблем с помощью мышки", center = (320, 160), color = "black", fontsize = 16)
+        screen.draw.text("Стреляй при помощи стрелок ⬅️⬆️➡️", center = (350, 185), color = "black", fontsize = 16)
+        screen.draw.text("Остерегайся черных дыр", center = (350, 200), color = "black", fontsize = 16)
+        screen.draw.text("Добудь в космосе цветок Артерозу", center = (350, 215), color = "black", fontsize = 16)
+        screen.draw.text("Твой тотем у одного из Артестарцев", center = (350, 230), color = "black", fontsize = 16)
+        screen.draw.text("Угадай, у какого с четырёх попыток", center = (350, 245), color = "black", fontsize = 16)
+        screen.draw.text("УДАЧИ! ПОЕХАЛИ!!!", center = (350, 261), color = "black", fontsize = 16)
+        
+        
+        # Окно проигрыша 
+    elif mode == "end":
+        fon.draw()
+        polomka.draw()
+        knopka.draw()
+        screen.draw.text("GAME OVER!", center = (450, 50), color = "white", fontsize = 36)
+        #Итоговый счет
+        screen.draw.text("Вы сбили           кораблей", center = (450, 100), color = "white", fontsize = 36)
+        screen.draw.text(count_vragi, center = (460, 100), color = "white", fontsize = 36)
+        screen.draw.text("+          🪙 ", center = (450, 150), color = "white", fontsize = 36)
+        screen.draw.text(count_vragi, center = (450, 150), color = "white", fontsize = 36)
+        screen.draw.text("Стоимость ремонта           🪙", center = (450, 190), color = "white", fontsize = 36)
+        screen.draw.text(count_polomok, center = (600, 190), color = "white", fontsize = 36)
+        screen.draw.text("РЕМОНТ", center = (350, 305), color = "white", fontsize = 36)
+
+    elif mode == "go":
+        GO.draw()
+
+    elif mode == "go_totem":
+        GO.draw()
+        screen.draw.text("Ты не нашел хранителя тотема", center = (350, 200), color = "yellow", fontsize = 21)
+        screen.draw.text("и не разгадал тайну галактики", center = (350, 270), color = "yellow", fontsize = 21)
+        screen.draw.text("повезёт в другой раз!", center = (350, 340), color = "yellow", fontsize = 21)
+
+    elif mode == "net_rose":
+        GO.draw()
+        screen.draw.text("Ты не нашел волшебную Артерозу", center = (350, 200), color = "yellow", fontsize = 21)
+        screen.draw.text("могущественный тотем остается у Артестарца", center = (350, 200), color = "yellow", fontsize = 21)
+        screen.draw.text("повезёт в другой раз!", center = (350, 200), color = "yellow", fontsize = 21)
+    
+    # Окно прохождения уровня
+    if mode == 'level_end':
+        fon.draw()
+        screen.draw.text("УРОВЕНЬ ПРОЙДЕН!", center = (300, 200), color = "white", fontsize = 36)
+        #Итоговый счет
+        screen.draw.text("Вы сбили           кораблей", center = (300, 200), color = "white", fontsize = 36)
+        screen.draw.text(count_vragi, center = (240, 200), color = "white", fontsize = 36)
+        screen.draw.text("+      🪙 ", center = (300, 250), color = "white", fontsize = 36)
+        screen.draw.text(count_vragi, center = (240, 250), color = "white", fontsize = 36)
+
+    # Окно победы в игре
+    if mode == 'pobeda':
+        fon_win.draw()
+        win.draw()
+        starec_final.draw()
+        artegora_flower.draw()
+        totem.draw()
+        screen.draw.text("Поздравляю! Ты получаешь цветок Артегоры! Он спасет планету Галактион от засухи", center=(WIDTH/2, HEIGHT/2 - 50), color = 'green', fontsize = 16)
+        screen.draw.text("Народ Артефактерианцев благодарит тебя за цветок вселенской мудрости Артерозу!", center=(WIDTH/2, HEIGHT/2+50), color = 'green', fontsize = 16)
+        screen.draw.text("Прими в знак благодарности Артетотем. Он спасет твою планету от потопа", center=(WIDTH/2, HEIGHT/2 + 150), color = 'green', fontsize = 16)
+
+
+# Управление кораблем с помощью мышки
+def on_mouse_move(pos):
+    ship.pos = pos
+
+# Добавление в список нового врага
+def new_vrag():
+    x = random.randint(50, 650)
+    y = -50
+    vrag = Actor("arteship", (x, y))
+    vrag.speed = random.randint(2, 8)
+    vragi.append(vrag)
+
+# Движение врагов
+def move_vrag():
+    global count_vragi
+    for i in range(len(vragi)):
+        if vragi[i].y < 650:
+            vragi[i].y += vragi[i].speed
+        else:
+            # удаление врагов
+            vragi.pop(i)
+            count_vragi -= 1
+            plus_vrag()
+
+# Движение планет
+def planet():
+    for i in range(len(planets)):
+        if planets[i].y < 550:
+                planets[i].y = planets[i].y + 1
+        else:
+            planets[i].x = random.randint(0, 600)
+            planets[i].y = random.randint(-2500, -155)
+
+# Движение чёрной дыры
+def holemuve():
+    if hole.y < 550:
+        hole.y = hole.y + 2
+    else:
+        hole.x = random.randint(0, 600)
+        hole.y = random.randint(-255, -155)
+
+# Движение артерозы
+def rosemuve():
+    if rose.y < 550:
+        rose.y = rose.y + 2
+    else:
+        rose.x = random.randint(0, 600)
+        rose.y = random.randint(-255, -100)
+    
+# бонусеа часеа😏
+
+def normal_speed():
+    global planets
+    for enemy in vragi:
+        enemy.speed = random.randint(4, 8)
+
+def chas():
+    if ship.colliderect(planets[6]) and mode == 'shooter':
+        planets[6].y -= 1500
+        for enemy in vragi:
+            enemy.speed = 0
+        schedule_unique(normal_speed,5)
+
+# Столкновения
+def collisions():
+    global mode, count_vragi, vragi, bullets, count_polomok, planets, krot, arterose_vin
+
+    #Бонус часы
+    chas()
+    
+    #Бонус бомбочка
+    if ship.colliderect(planets[7]):
+        for i in range(len(vragi)):
+            vragi[i].y -= 425
+            planets[7].y -= 1500
+            
+    #Бонус монетка
+    if ship.colliderect(planets[8]):
+        count_vragi = count_vragi * 2
+        planets[8].y -= 1500
+        
+    for i in range(len(vragi)):
+        if ship.colliderect(vragi[i]):
+            mode = 'end'
+            vragi = [] 
+            count_polomok += 1
+            break
+                     
+        #Столкновение с пулями
+        for j in range(len(bullets)):
+            if bullets[j].colliderect(vragi[i]):
+                vragi.pop(i)
+                bullets.pop(j)
+                count_vragi += 1
+                new_vrag()
+                break
+                    
+        for l in range(len(bullets_left)):
+            if bullets_left[l].colliderect(vragi[i]):
+                vragi.pop(i)
+                bullets_left.pop(l)
+                count_vragi += 1
+                new_vrag()
+                break
+    
+        for r in range(len(bullets_right)):
+            if bullets_right[r].colliderect(vragi[i]):
+                vragi.pop(i)
+                bullets_right.pop(r)
+                count_vragi += 1
+                new_vrag()
+                break
+
+        #Столкновение с чёрной дырой 
+    if ship.colliderect(hole):
+        mode = 'go'
+
+        #Столкновение с кротовой норой 
+    if count_vragi >= 50 and ship.colliderect(krot):
+        mode = 'krot_nora'
+        vragi = []
+        planets = []
+
+        #Столкновение с Артерозой 
+    if count_vragi >= 35 and ship.colliderect(rose):
+        arterose_vin = 1
+        rose.y -= 5000
+
+def update(dt):
+    global mode, count_vragi, vragi, bullets, count_polomok
+    if mode == "shooter":
+        move_vrag()
+        collisions()
+        planet()
+        holemuve()
+        rosemuve()
+
+        # Движение пуль
+        for i in range(len(bullets)):
+            if bullets[i].y < -35:
+                bullets.pop(i)
+                break
+            else:
+                bullets[i].y = bullets[i].y - 15
+    
+        for i in range(len(bullets_left)):
+            if bullets_left[i].x < -15:
+                bullets_left.pop(i)
+                break
+            else:
+                bullets_left[i].x = bullets_left[i].x - 15
+    
+        for i in range(len(bullets_right)):
+            if bullets_right[i].x > WIDTH + 15:
+                bullets_right.pop(i)
+                break
+            else:
+                bullets_right[i].x = bullets_right[i].x + 15
+
+def on_key_down(key):
+    global count_polomok, count_vragi, colli, mode, enemies, artegori, palochki, old_x, old_y, arterose_vin, popytka
+    
+    # Пульки запуск
+    if keyboard.left:
+        bullet = Actor("lazer_b_2")
+        bullet.pos = ship.pos
+        bullets_left.append(bullet)
+    elif keyboard.up:
+        bullet = Actor("lazer_b")
+        bullet.pos = ship.pos
+        bullets.append(bullet)
+    elif keyboard.right:
+        bullet = Actor("lazer_b_2")
+        bullet.pos = ship.pos
+        bullets_right.append(bullet)
+
+    # Движение героини в рогалике
+    if mode == 'krot_nora':
+        old_x = hero.x
+        old_y = hero.y
+        
+        if keyboard.right and hero.x < f1.width * 13:
+            hero.image = "hero_red"
+            hero.x += f1.width
+    
+        if keyboard.left and hero.x > f1.width:
+            hero.image = "hero_red_left"
+            hero.x -= f1.width
+    
+        if keyboard.down and hero.y < f1.height * 6:
+            hero.image = "hero_red_down"
+            hero.y += f1.height
+    
+        if keyboard.up and hero.y > f1.height:
+            hero.image = "hero_red_up"
+            hero.y -= f1.height
+
+    #Столкновение с артестарцами в рогалике
+    enemy_index = hero.collidelist(enemies)
+    if enemy_index != -1:
+        hero.x = old_x
+        hero.y = old_y
+        colli = 1
+        enemy = enemies[enemy_index]
+         
+        #Добавление бонусов
+        if enemy.bonus == 1:
+            enemy.image = 'artegora'
+            if arterose_vin == 1:
+                mode = 'pobeda'
+            else:
+                mode = 'net_rose'
+            
+        elif enemy.bonus == 0:
+            enemy.image = 'magic_wand_8Q6jP9l' 
+            popytka -= 1 
+            if popytka <= 0:
+                mode = "go_totem"               
+        
+def on_mouse_down(button, pos):
+    global mode, count_vragi, count_polomok, colli
+      
+    #Клик по перчатке в меню приветствия
+    if glove.collidepoint(pos) and mode == 'privetstvie':
+        mode = 'menu'
+            
+    #Клик по перчатке в меню с правилами игры
+    if glove_2.collidepoint(pos) and mode == 'menu':
+        mode = 'shooter'
+        for i in range(8):
+            plus_vrag()
+            
+     
+    #Клик по кнопке РЕМОНТ
+    if knopka.collidepoint(pos) and mode == 'end':
+        if count_vragi >= count_polomok: 
+            mode = 'shooter'
+            fon.image = 'space'
+            count_vragi -= count_polomok
+            vragi = []
+            bullets = []
+            bullets_left = []
+            bullets_right = []
+            for i in range(8):
+                plus_vrag()
+        if count_vragi < count_polomok:
+            mode = 'go'
